@@ -43,5 +43,8 @@
     <Text Include="Params.txt">
       <Filter>Файлы ресурсов</Filter>
     </Text>
+    <Text Include="Result.txt">
+      <Filter>Файлы ресурсов</Filter>
+    </Text>
   </ItemGroup>
 </Project>

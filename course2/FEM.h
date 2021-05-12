@@ -1,4 +1,5 @@
 #pragma once
+#include <iostream>
 #include <list>
 typedef double real;
 using namespace std;
@@ -45,7 +46,7 @@ class FEM
 
    void MakeSparseFormat();
    void AddElement(Matrix *A, int knot_num[4], int i, int j, real elem);
-   void AddLocal(int knot_num[4], real localA[4][4]);
+   void AddLocal(Matrix* A, int knot_num[4], real localA[4][4], real coeff);
    void MakeBounds(int s);
    void CreateA(int s);
    void CreateM(rectangle *rect); // можно посылать параметр, на кот. умножается матрица
@@ -68,5 +69,5 @@ class FEM
    public:
    FEM();
    void Solve();
-   void ShowError(int s);    
+   void ShowError(int s, ofstream &out);    
 };

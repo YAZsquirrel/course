@@ -202,11 +202,11 @@ void FEM::AddElement(Matrix* A, int knot_num[4], int i, int j, real elem)
 
 }
 
-void FEM::AddLocal(int knot_num[4], real localA[4][4])
+void FEM::AddLocal(Matrix* A, int knot_num[4], real localA[4][4], real coeff)
 {
    int ibeg, iend, ind;
    for (int i = 0; i < 4; i++)
-      A->d[knot_num[i]] += localA[i][i];
+      A->d[knot_num[i]] += coeff*localA[i][i];
    for (int i = 0; i < 4; i++)
    {
       ibeg = A->ig[knot_num[i]];
@@ -221,8 +221,8 @@ void FEM::AddLocal(int knot_num[4], real localA[4][4])
             else
                iend = ind;
          }
-         A->l[ibeg] += localA[i][j];
-         A->u[ibeg] += localA[j][i];
+         A->l[ibeg] += coeff * localA[i][j];
+         A->u[ibeg] += coeff * localA[j][i];
          ibeg++;
       }
    }
@@ -237,17 +237,41 @@ void FEM::equalize(real* x, real* y)
 
 void FEM::Solve()
 {
+   ofstream out("Result.txt");
+   out.scientific;
+   out.precision(15);
+   cout.scientific;
+   cout.precision(15);
+
+   char title[] = "\n| q*\t\t\t| q\t\t\t| |q*-q|\t\t|\n+-----------------------+-----------------------+-----------------------+\n";
+   out << title;
+   cout << title;
+
+
    CreateA(0);
    Createb(0);
    MakeBounds(0);
    SolveSLAE(0);
-   ShowError(0);
+   ShowError(0, out);
+
+
+   out.close();
 }
 
-void FEM::ShowError(int s)
+void FEM::ShowError(int s, ofstream &out)
 {
+   cout << "t = " << t[s] << '\n';
+   out << "t = " << t[s]  << '\n';
    for (int i = 0; i < num_of_knots; i++)
-      cout << q[s][i] - ug(knots[i], s) << '\n';
+   {
+      out << scientific << "| " << ug(knots[i], t[s]) << "\t| " << q[s][i] << "\t| "
+          << abs(q[s][i] - ug(knots[i], t[s])) << "\t|\n";
+      cout << scientific << "| " << ug(knots[i], t[s]) << "\t| " << q[s][i] << "\t| "
+           << abs(q[s][i] - ug(knots[i], t[s])) << "\t|\n";
+   }
+   cout << "+-----------------------+-----------------------+-----------------------+\n";
+   out << "+-----------------------+-----------------------+-----------------------+\n";
+
 }
 
 void FEM::MakeBounds(int s)
@@ -287,8 +311,8 @@ void FEM::CreateA(int s) // 1/dt^2 Mx + 1/2dt Mo + 1/2 G
       rect = rects[i];
       CreateG(rect);
       CreateM(rect);
-      AddLocal(rect->knots_num, localM);
-      AddLocal(rect->knots_num, localG);
+      AddLocal(A, rect->knots_num, localM, 1);
+      AddLocal(A, rect->knots_num, localG, 1);
    }
 
 }

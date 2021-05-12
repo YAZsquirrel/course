@@ -1,6 +1,8 @@
 1 1 0 5 
 5
 0 1 2 3 4
+
+
 lam sigma khi un
 nt
 t0 t1 t2 ... T
