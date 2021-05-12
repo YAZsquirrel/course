@@ -52,7 +52,6 @@ class FEM
    void CreateM(rectangle *rect); // можно посылать параметр, на кот. умножается матрица
    void CreateG(rectangle *rect); // лямбду надо при формировании
    void Createb(int s);
-   void Output();
    real diffNorm(real *q);
    real norm(real* b);
    real ug(knot knot_, real t);
@@ -69,5 +68,5 @@ class FEM
    public:
    FEM();
    void Solve();
-   void ShowError(int s, ofstream &out);    
+   void Output(int s, ofstream &out);    
 };

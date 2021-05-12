@@ -1,4 +1,4 @@
-#include "FEM.h"
+ï»¿#include "FEM.h"
 #include <fstream>
 #include <iostream>
 
@@ -17,9 +17,9 @@ FEM::FEM()
       fknots >> knots[i].x >> knots[i].y;
    fknots.close();
 
-   rectangle *rect;
+   rectangle* rect;
    frects >> num_of_FE;
-   rects = new rectangle*[num_of_FE];
+   rects = new rectangle * [num_of_FE];
    int num;
    for (int i = 0; i < num_of_FE; i++)
    {
@@ -32,25 +32,25 @@ FEM::FEM()
       }
       rect->hy = rect->knots[3].y - rect->knots[0].y;
       rect->hx = rect->knots[3].x - rect->knots[0].x;
-      rects[i] = rect; 
+      rects[i] = rect;
       //rects.push_back(rect);
    }
    frects.close();
-   
+
    int cond_num;
    fbounds >> cond_num;
    for (int i = 0; i < cond_num; i++)
    {
       bound* cond = new bound;
-      fbounds >> num;	//íîìåð óñëîâèÿ
+      fbounds >> num;	//Ã­Ã®Ã¬Ã¥Ã° Ã³Ã±Ã«Ã®Ã¢Ã¨Ã¿
       cond->bound_num = num == 1;
       if (!cond->bound_num)
-        fbounds >> cond->bound_param;
+         fbounds >> cond->bound_param;
       int number;
       for (int i = 0; i < 2; i++)
       {
          fbounds >> number;									// 
-         cond->knot_nums[i] = number - 1;				// íîìåðà óçëîâ ðåáðà, íà êîòîðîì êðàåâîå...
+         cond->knot_nums[i] = number - 1;				// Ã­Ã®Ã¬Ã¥Ã°Ã  Ã³Ã§Ã«Ã®Ã¢ Ã°Ã¥Ã¡Ã°Ã , Ã­Ã  ÃªÃ®Ã²Ã®Ã°Ã®Ã¬ ÃªÃ°Ã Ã¥Ã¢Ã®Ã¥...
          cond->knots[i] = knots[number - 1];	// 
       }
       //fcond >> number;										//
@@ -64,25 +64,25 @@ FEM::FEM()
       fparams >> t[i];
    fparams.close();
 #pragma endregion
-   
+
    MakeSparseFormat();
-   q = new real*[nt];
+   q = new real * [nt];
    for (int i = 0; i < nt; i++)
       q[i] = new real[num_of_knots]{};
    b = new real[num_of_knots]{};
    temp = new real[num_of_knots]{};
-   ff = new real[num_of_knots] {};
-   z = new real[num_of_knots] {};
-   r = new real[num_of_knots] {};
-   p = new real[num_of_knots] {};
+   ff = new real[num_of_knots]{};
+   z = new real[num_of_knots]{};
+   r = new real[num_of_knots]{};
+   p = new real[num_of_knots]{};
    //qk = new real[num_of_knots]{};
 }
 
-void FEM::MakeSparseFormat() 
+void FEM::MakeSparseFormat()
 {
-   const int N = 4; 
-   int *list1, *list2;
-   int *listbeg = new int[num_of_knots];
+   const int N = 4;
+   int* list1, * list2;
+   int* listbeg = new int[num_of_knots];
 
    for (int i = 0; i < num_of_knots; i++)
       listbeg[i] = -1;
@@ -91,41 +91,41 @@ void FEM::MakeSparseFormat()
    list2 = new int[num_of_knots * num_of_knots]{};
    int listsize = -1, iaddr, ind1, ind2, k;
 
-   for (int iel = 0; iel < num_of_FE; iel++) // ïðîõîä ïî âñåì êý
+   for (int iel = 0; iel < num_of_FE; iel++) // Ã¯Ã°Ã®ÃµÃ®Ã¤ Ã¯Ã® Ã¢Ã±Ã¥Ã¬ ÃªÃ½
    {
-      for (int i = 0; i < 4; i++) // ïî óçëàì êý
+      for (int i = 0; i < 4; i++) // Ã¯Ã® Ã³Ã§Ã«Ã Ã¬ ÃªÃ½
       {
          k = rects[iel]->knots_num[i]; //
          for (int j = i + 1; j < 4; j++) // 
          {
             ind1 = k;
             ind2 = rects[iel]->knots_num[j];  //
-            if (ind2 < ind1) //çàíåñåíèå ñâÿçè áîëüøîãî íîìåðà ñ ìåíüøèì, òå ind2 ñ ind1
+            if (ind2 < ind1) //Ã§Ã Ã­Ã¥Ã±Ã¥Ã­Ã¨Ã¥ Ã±Ã¢Ã¿Ã§Ã¨ Ã¡Ã®Ã«Ã¼Ã¸Ã®Ã£Ã® Ã­Ã®Ã¬Ã¥Ã°Ã  Ã± Ã¬Ã¥Ã­Ã¼Ã¸Ã¨Ã¬, Ã²Ã¥ ind2 Ã± ind1
             {
                ind1 = ind2;
                ind2 = k;
             }
             iaddr = listbeg[ind2];
-            if (iaddr == -1) // åñëè ñïèñîê ïóñò
+            if (iaddr == -1) // Ã¥Ã±Ã«Ã¨ Ã±Ã¯Ã¨Ã±Ã®Ãª Ã¯Ã³Ã±Ã²
             {
                listsize++;
                listbeg[ind2] = listsize;
                list1[listsize] = ind1;
                list2[listsize] = -1;
             }
-            else // èùåì â ñïèñêå ind1
+            else // Ã¨Ã¹Ã¥Ã¬ Ã¢ Ã±Ã¯Ã¨Ã±ÃªÃ¥ ind1
             {
                while (list1[iaddr] < ind1 && list2[iaddr] >= 0)
                   iaddr = list2[iaddr];
-               if (list1[iaddr] > ind1)  // åñëè íå íàøëè è âñòðåòèëè ýë ñ áîëüøèì íîìåðîì 
-               {                         // äîáàâëÿåì ïåðåä íèì, ÷òîá ñïèñîê áûë óïîðÿäî÷åííûì
+               if (list1[iaddr] > ind1)  // Ã¥Ã±Ã«Ã¨ Ã­Ã¥ Ã­Ã Ã¸Ã«Ã¨ Ã¨ Ã¢Ã±Ã²Ã°Ã¥Ã²Ã¨Ã«Ã¨ Ã½Ã« Ã± Ã¡Ã®Ã«Ã¼Ã¸Ã¨Ã¬ Ã­Ã®Ã¬Ã¥Ã°Ã®Ã¬ 
+               {                         // Ã¤Ã®Ã¡Ã Ã¢Ã«Ã¿Ã¥Ã¬ Ã¯Ã¥Ã°Ã¥Ã¤ Ã­Ã¨Ã¬, Ã·Ã²Ã®Ã¡ Ã±Ã¯Ã¨Ã±Ã®Ãª Ã¡Ã»Ã« Ã³Ã¯Ã®Ã°Ã¿Ã¤Ã®Ã·Ã¥Ã­Ã­Ã»Ã¬
                   listsize++;
                   list1[listsize] = list1[iaddr];
                   list2[listsize] = list2[iaddr];
                   list1[iaddr] = ind1;
                   list2[iaddr] = listsize;
                }
-               else if (list1[iaddr] < ind1) // åñëè íå íàøëè, òî ïèõàåì â êîíåö
+               else if (list1[iaddr] < ind1) // Ã¥Ã±Ã«Ã¨ Ã­Ã¥ Ã­Ã Ã¸Ã«Ã¨, Ã²Ã® Ã¯Ã¨ÃµÃ Ã¥Ã¬ Ã¢ ÃªÃ®Ã­Ã¥Ã¶
                {
                   listsize++;
                   list2[iaddr] = listsize;
@@ -146,7 +146,7 @@ void FEM::MakeSparseFormat()
    for (int i = 0; i < num_of_knots; i++)
    {
       A->ig[i + 1] = A->ig[i];
-      
+
       for (iaddr = listbeg[i]; iaddr != -1; )
       {
          A->jg[A->ig[i + 1]] = list1[iaddr];
@@ -183,13 +183,13 @@ void FEM::MakeSparseFormat()
 
 void FEM::AddElement(Matrix* A, int knot_num[4], int i, int j, real elem)
 {
-   if(i == j)
+   if (i == j)
       A->d[knot_num[i]] += elem;
    else if (i < j)
    {
       for (int i = A->ig[j]; i < A->ig[j + 1]; i++)
          if (A->jg[i] == i) break;
-      
+
       A->u[i] += elem; // i-1?
    }
    else
@@ -206,7 +206,7 @@ void FEM::AddLocal(Matrix* A, int knot_num[4], real localA[4][4], real coeff)
 {
    int ibeg, iend, ind;
    for (int i = 0; i < 4; i++)
-      A->d[knot_num[i]] += coeff*localA[i][i];
+      A->d[knot_num[i]] += coeff * localA[i][i];
    for (int i = 0; i < 4; i++)
    {
       ibeg = A->ig[knot_num[i]];
@@ -215,7 +215,7 @@ void FEM::AddLocal(Matrix* A, int knot_num[4], real localA[4][4], real coeff)
          iend = A->ig[knot_num[i] + 1];  // -1 ?
          while (A->jg[ibeg] != knot_num[j])
          {
-            ind = (ibeg + iend)/2;
+            ind = (ibeg + iend) / 2;
             if (A->jg[ind] < knot_num[j])
                ibeg = ind + 1;
             else
@@ -226,7 +226,7 @@ void FEM::AddLocal(Matrix* A, int knot_num[4], real localA[4][4], real coeff)
          ibeg++;
       }
    }
-   
+
 }
 
 void FEM::equalize(real* x, real* y)
@@ -252,22 +252,22 @@ void FEM::Solve()
    Createb(0);
    MakeBounds(0);
    SolveSLAE(0);
-   ShowError(0, out);
+   Output(0, out);
 
 
    out.close();
 }
 
-void FEM::ShowError(int s, ofstream &out)
+void FEM::Output(int s, ofstream& out)
 {
    cout << "t = " << t[s] << '\n';
-   out << "t = " << t[s]  << '\n';
+   out << "t = " << t[s] << '\n';
    for (int i = 0; i < num_of_knots; i++)
    {
       out << scientific << "| " << ug(knots[i], t[s]) << "\t| " << q[s][i] << "\t| "
-          << abs(q[s][i] - ug(knots[i], t[s])) << "\t|\n";
+         << abs(q[s][i] - ug(knots[i], t[s])) << "\t|\n";
       cout << scientific << "| " << ug(knots[i], t[s]) << "\t| " << q[s][i] << "\t| "
-           << abs(q[s][i] - ug(knots[i], t[s])) << "\t|\n";
+         << abs(q[s][i] - ug(knots[i], t[s])) << "\t|\n";
    }
    cout << "+-----------------------+-----------------------+-----------------------+\n";
    out << "+-----------------------+-----------------------+-----------------------+\n";
@@ -285,12 +285,12 @@ void FEM::MakeBounds(int s)
          for (int i = 0; i < 2; i++)
          {
             A->d[cond->knot_nums[i]] = 1;
-            for (int j = A->ig[cond->knot_nums[i]] ; j < A->ig[cond->knot_nums[i] + 1]; j++)
+            for (int j = A->ig[cond->knot_nums[i]]; j < A->ig[cond->knot_nums[i] + 1]; j++)
                A->l[j] = 0.;
             for (int j = 0; j < A->ig[num_of_knots]; j++)
                if (A->jg[j] == cond->knot_nums[i])
                   A->u[j] = 0.;
-           
+
             b[cond->knot_nums[i]] = ug(cond->knots[i], s);
          }
       }
@@ -304,8 +304,8 @@ void FEM::MakeBounds(int s)
 
 void FEM::CreateA(int s) // 1/dt^2 Mx + 1/2dt Mo + 1/2 G
 {
-   
-   rectangle *rect;
+
+   rectangle* rect;
    for (int i = 0; i < num_of_FE; i++)
    {
       rect = rects[i];
@@ -317,15 +317,15 @@ void FEM::CreateA(int s) // 1/dt^2 Mx + 1/2dt Mo + 1/2 G
 
 }
 
-void FEM::CreateM(rectangle *rect)
+void FEM::CreateM(rectangle* rect)
 {
-   localM[0][0] = localM[1][1] = localM[2][2] = localM[3][3] = gamma / 9. * (rect->hx) * (rect->hy); //äèàãîíàëü
+   localM[0][0] = localM[1][1] = localM[2][2] = localM[3][3] = gamma / 9. * (rect->hx) * (rect->hy); //Ã¤Ã¨Ã Ã£Ã®Ã­Ã Ã«Ã¼
    localM[0][1] = localM[1][0] = localM[0][2] = localM[2][0] =
-   localM[2][3] = localM[3][2] = localM[1][3] = localM[3][1] = gamma / 18. * (rect->hx) * (rect->hy);
-   localM[0][3] = localM[3][0] = localM[1][2] = localM[2][1] = gamma / 36. * (rect->hx) * (rect->hy); // ïîáî÷íàÿ äèàãîíàëü
+      localM[2][3] = localM[3][2] = localM[1][3] = localM[3][1] = gamma / 18. * (rect->hx) * (rect->hy);
+   localM[0][3] = localM[3][0] = localM[1][2] = localM[2][1] = gamma / 36. * (rect->hx) * (rect->hy); // Ã¯Ã®Ã¡Ã®Ã·Ã­Ã Ã¿ Ã¤Ã¨Ã Ã£Ã®Ã­Ã Ã«Ã¼
 }
 
-void FEM::CreateG(rectangle *rect)
+void FEM::CreateG(rectangle* rect)
 {
    localG[0][0] = localG[1][1] = localG[2][2] = localG[3][3] = lambda * (rect->hy / rect->hx + rect->hx / rect->hy) / 3.;
    localG[0][1] = localG[1][0] = localG[2][3] = localG[3][2] = -lambda * (rect->hy / rect->hx - rect->hx / rect->hy / 2.) / 3.;
@@ -349,7 +349,7 @@ void FEM::Createb(int s) // 1/2bj + 1/2bj-2 + 2/dt^2 Mx qj-1 - 1/dt^2 Mk qj-2 + 
       localb[1] = (rect_->hx) * (rect_->hy) * (2. * f_[0] + 4. * f_[1] + f_[2] + 2. * f_[3]) / 36.;
       localb[2] = (rect_->hx) * (rect_->hy) * (2. * f_[0] + f_[1] + 4. * f_[2] + 2. * f_[3]) / 36.;
       localb[3] = (rect_->hx) * (rect_->hy) * (f_[0] + 2. * f_[1] + 2. * f_[2] + 4. * f_[3]) / 36.;
-      
+
       for (int i = 0; i < 4; i++)
          b[rect_->knots_num[i]] += localb[i];
    }
@@ -411,19 +411,4 @@ void FEM::SolveSLAE(int s)
       }
       res = sqrt(scalar(r, r)) / sqrt(scalar(b, b));
    }
-}
-
-
-void FEM::Output()
-{
-}
-
-real FEM::diffNorm(real* q)
-{
-   return real();
-}
-
-real FEM::norm(real* b)
-{
-   return real();
 }
