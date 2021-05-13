@@ -35,10 +35,10 @@ class FEM
 
    knot* knots;
 
-   //real lambda(real knot[2], real t);
+   real lambda(knot knot_, real t);
    real f(knot knot_, real t);
-   real gamma = 1, theta = 1, khi = 1, lambda = 1;
-   int num_of_knots, num_of_FE, un, nt;
+   real sigma = 1, theta = 1, khi = 1;
+   int num_of_knots, num_of_FE, un, nt, num_of_not_zero;
 
    real localM[4][4]; // 4*4
    real localG[4][4];
@@ -52,18 +52,17 @@ class FEM
    void CreateM(rectangle *rect); // можно посылать параметр, на кот. умножается матрица
    void CreateG(rectangle *rect); // лямбду надо при формировании
    void Createb(int s);
-   real diffNorm(real *q);
-   real norm(real* b);
-   real ug(knot knot_, real t);
-   //real **A, **M, **G;
-   Matrix *A, *M, *G;
-   real *b, *qk, *temp, *t;
-   real **q;  // q[0] & q[1] - начальные
    void equalize(real *x, real *y);
-   real scalar(real* v, real* u);
-   void MulAb(real* v, Matrix* A, real* b);
-   real* z, *r, *p, *ff, *x;
    void SolveSLAE(int s);
+   void MulAb(real* v, Matrix* A, real* b);
+   void nullify(real *x);
+   real scalar(real* v, real* u);
+   real ug(knot knot_, real t);
+
+   real* z, *r, *p, *ff;
+   Matrix *A, *M, *G;
+   real *b, *b0, *temp, *t;
+   real *q0, *q1, *q;  // q0 & q1 - начальные, а также q0 = q^k-2, q1 = q^k-1
 
    public:
    FEM();
