@@ -12,6 +12,11 @@ real FEM::lambda(knot point, real t)
 	}
 }
 
+real FEM::theta(knot point, real t)
+{
+	return -point.x * t;
+}
+
 real FEM::f(knot point, real t)
 {
 	switch (un)
@@ -31,6 +36,11 @@ real FEM::f(knot point, real t)
 	default:
 		return 0;
 	}
+}
+
+real FEM::ubeta(knot point, real t)
+{
+	return ug(point, t) - point.x * t;
 }
 
 real FEM::ug(knot point, real t)

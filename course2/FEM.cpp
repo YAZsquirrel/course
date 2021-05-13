@@ -43,9 +43,7 @@ FEM::FEM()
    {
       bound* cond = new bound;
       fbounds >> num;	//íîìåð óñëîâèÿ
-      cond->bound_num = num == 1;
-      if (!cond->bound_num)
-         fbounds >> cond->bound_param;
+      cond->bound_num = num;
       int number;
       for (int i = 0; i < 2; i++)
       {
@@ -53,7 +51,8 @@ FEM::FEM()
          cond->knot_nums[i] = number - 1;				// íîìåðà óçëîâ ðåáðà, íà êîòîðîì êðàåâîå...
          cond->knots[i] = knots[number - 1];	// 
       }
-      //fcond >> number;										//
+      if (cond->bound_num == 3)
+         fbounds >> cond->bound_param;									//
       bounds.push_back(cond);
    }
    fbounds.close();
@@ -182,23 +181,24 @@ void FEM::MakeSparseFormat()
 
 }
 
-void FEM::AddElement(Matrix* A, int knot_num[4], int i, int j, real elem)
+void FEM::AddElement(Matrix* A, int i, int j, real elem)
 {
+   int k = 0;
    if (i == j)
-      A->d[knot_num[i]] += elem;
+      A->d[i] += elem;
    else if (i < j)
    {
-      for (int i = A->ig[j]; i < A->ig[j + 1]; i++)
-         if (A->jg[i] == i) break;
+      for (k = A->ig[j]; k < A->ig[j + 1]; k++)
+         if (A->jg[k] == i) break;
 
-      A->u[i] += elem; // i-1?
+      A->u[k] += elem; // i-1?
    }
    else
    {
-      for (int i = A->ig[j]; i < A->ig[j + 1]; i++)
-         if (A->jg[i] == j) break;
+      for (k = A->ig[i]; k < A->ig[i + 1]; k++)
+         if (A->jg[k] == j) break;
 
-      A->l[i] += elem; // i-1??
+      A->l[k] += elem; // i-1??
    }
 
 }
@@ -293,7 +293,7 @@ void FEM::MakeBounds(int s)
    {
       bound* cond = *iter;
 
-      if (cond->bound_num) // 1 краевое
+      if (cond->bound_num == 1) // 1 краевое
       {
          for (int i = 0; i < 2; i++)
          {
@@ -307,9 +307,28 @@ void FEM::MakeBounds(int s)
             b[cond->knot_nums[i]] = ug(cond->knots[i], t[s]);
          }
       }
-      else
+      else if(cond->bound_num == 2)
       {
+         int h = abs(cond->knot_nums[0] - cond->knot_nums[0]) != 1 ? abs(cond->knots[0].x - cond->knots[1].x) : abs(cond->knots[0].y - cond->knots[1].y);
+         real b_add[2] = { h / 6. * (2. * theta(cond->knots[0], t[s]) + theta(cond->knots[1], t[s])),
+                           h / 6. * (theta(cond->knots[0], t[s]) + 2. * theta(cond->knots[1], t[s])) };
+         b[cond->knot_nums[0]] += b_add[0];
+         b[cond->knot_nums[1]] += b_add[1];
+      }
 
+      else if (cond->bound_num == 3)
+      {
+         int h = cond->bound_param * ( abs(cond->knot_nums[0] - cond->knot_nums[0]) != 1 ? abs(cond->knots[0].x - cond->knots[1].x) : abs(cond->knots[0].y - cond->knots[1].y)) / 6.;
+         real b_add[2] = {  h * (2 * ubeta(cond->knots[0], t[s]) + ubeta(cond->knots[1], t[s])),
+                            h * (ubeta(cond->knots[0], t[s]) + 2 * ubeta(cond->knots[1], t[s])) };
+         b[cond->knot_nums[0]] += b_add[0];
+         b[cond->knot_nums[1]] += b_add[1];
+
+         real localAS3[2][2] = {{ 2. * h , h}, { h, 2. * h }};
+
+         for (int i = 0; i < 2; i++)
+            for (int j = 0; j < 2; j++)
+               AddElement(A, i, j, localAS3[i][j]);
       }
    }
 }

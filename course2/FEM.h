@@ -23,7 +23,7 @@ class FEM
    struct bound {
       int knot_nums[2];
       knot knots[2];
-      bool bound_num;
+      int bound_num;
       int bound_param;
    };
    list<bound*> bounds;
@@ -36,8 +36,10 @@ class FEM
    knot* knots;
 
    real lambda(knot knot_, real t);
+   real theta(knot knot_, real t);
    real f(knot knot_, real t);
-   real sigma = 1, theta = 1, khi = 1;
+   real ubeta(knot knot_, real t);
+   real sigma = 1, khi = 1;
    int num_of_knots, num_of_FE, un, nt, num_of_not_zero;
 
    real localM[4][4]; // 4*4
@@ -45,7 +47,7 @@ class FEM
    real localA[4][4];
 
    void MakeSparseFormat();
-   void AddElement(Matrix *A, int knot_num[4], int i, int j, real elem);
+   void AddElement(Matrix *A, int i, int j, real elem);
    void AddLocal(Matrix* A, int knot_num[4], real localA[4][4], real coeff);
    void MakeBounds(int s);
    void CreateA(int s);
