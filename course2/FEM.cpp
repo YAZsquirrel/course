@@ -361,10 +361,10 @@ void FEM::Createb(int s) // 1/2bj + 1/2bj-2 + 2/dt^2 Mx qj-1 - 1/dt^2 Mk qj-2 + 
 {
    real localb[4];
    real d[4];    // M ((bj + bj-2)/2 + 2x/dt^2 qj-1 - x/dt^2 qj-2 + o/2dt qj-2) // тк o и x - константы
-   real dt = 1 / (t[s] - t[s - 1]);
+   real dt = (t[s] - t[s - 1]);
    nullify(temp);
    nullify(b);
-   MulAb(temp, G, q0);
+   MulAb(temp, G, q0);  // 1/2 G qj-2
 
    for (int k = 0; k < num_of_FE; k++)
    {
