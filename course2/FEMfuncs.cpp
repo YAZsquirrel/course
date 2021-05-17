@@ -31,7 +31,8 @@ real FEM::f(knot point, real t)
 	case 8: return 0;
 	case 9: return 1;
 	case 10: return 2 * t + 2;
-	case 11: return 6 * t * t + 3 * t;
+	case 11: return 3 * t * t;
+	case 12: return cos(t);
 
 	default:
 		return 0;
@@ -58,6 +59,7 @@ real FEM::ug(knot point, real t)
 	case 9: return t;
 	case 10: return t * t;
 	case 11: return t * t * t;
+	case 12: return sin(t);
 
 	default:
 		return 0;

@@ -436,10 +436,9 @@ void FEM::nullify(real* x)
 
 void FEM::SolveSLAE(int s)
 {
-   real res, alpha, beta, skp, eps = 1e-17;
+   real res, alpha, beta, skp, eps = 1e-167;
    int i, k;
 
-   double lastres;
    MulAb(ff, A, q);
    for (i = 0; i < num_of_knots; i++)
       z[i] = r[i] = b[i] - ff[i];
@@ -448,7 +447,6 @@ void FEM::SolveSLAE(int s)
 
    for (k = 1; k < 100000 && res > eps; k++)
    {
-      lastres = res;
       skp = scalar(p, p);
       alpha = scalar(p, r) / skp;
       for (i = 0; i < num_of_knots; i++)
@@ -464,5 +462,14 @@ void FEM::SolveSLAE(int s)
          p[i] = ff[i] + beta * p[i];
       }
       res = sqrt(scalar(r, r)) / sqrt(scalar(b, b));
+
+      if (k % 100)
+      {
+          MulAb(ff, A, q);
+          for (i = 0; i < num_of_knots; i++)
+              z[i] = r[i] = b[i] - ff[i];
+          MulAb(p, A, z);
+          res = sqrt(scalar(r, r)) / sqrt(scalar(b, b));
+      }
    }
 }
